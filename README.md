@@ -8,7 +8,7 @@
 
 ## Overview
 
-This repository contains my solutions for the AccuKnox AI/ML Trainee Assessment. It covers practical implementation of Python, REST APIs, SQLite, CSV data processing, and data visualization (Problem Statement 1), along with written responses on LLM/AI/ML concepts, chatbot architecture, and vector databases (Problem Statement 2).
+This repo has my solutions for the AccuKnox AI/ML Trainee Assessment — Python, REST APIs, SQLite, CSV handling, and data visualization for Problem Statement 1, plus written answers on LLM/AI/ML concepts, chatbot architecture, and vector databases for Problem Statement 2.
 
 ---
 
@@ -35,15 +35,79 @@ Accuknox Assignment/
 
 ---
 
-## Problem Statement 1
+## Quick Start
 
-### 1. API Data Retrieval and Storage (`q1_books.py`)
+### 1. Clone and enter the repo
+```
+git clone <this-repository-url>
+cd "Accuknox Assignment"
+```
 
-**Objective:** Fetch book data from an external REST API, store it in a local SQLite database, and display the stored records.
+### 2. (Optional) Create a virtual environment
+```
+python -m venv venv
+venv\Scripts\activate
+```
+*(macOS/Linux: `source venv/bin/activate`)*
 
-**API Used:** Open Library Search API (`https://openlibrary.org/search.json`) — free, public, no API key required. The following fields are extracted from each result: book title, author name, and first publication year.
+### 3. Install dependencies
+```
+pip install -r requirements.txt
+```
 
-**Database Schema — `books` table:**
+### 4. Move into the Problem Statement 1 folder
+```
+cd "Problem Statement 1"
+```
+All three scripts below assume you're running them from inside this folder, since `q3_csv.py` reads `users_data.csv` using a relative path.
+
+### 5. Run Question 1
+```
+python q1_books.py
+```
+
+### 6. Run Question 2 (needs two terminals)
+
+**Terminal 1** — start the mock API and leave it running:
+```
+python mock_scores_api.py
+```
+
+**Terminal 2** — fetch the data and generate the chart:
+```
+python q2_scores.py
+```
+A bar chart window will pop up with the average marked. Close it to end the script.
+
+### 7. Run Question 3
+```
+python q3_csv.py
+```
+
+### 8. Questions 4 & 5
+Written response, no code to run — see `PS1_Q4_Q5_Complex_Code.md`.
+
+### 9. Problem Statement 2
+Written answers, no code to run — see the `Problem Statement 2/` folder, one file per question.
+
+---
+
+## Assignment 1
+
+### 1. API Data Retrieval and Storage
+
+**Objective:** Fetch book data from an external REST API, store the required data in a local SQLite database, and display the stored records.
+
+**API Used:** Open Library Search API — `https://openlibrary.org/search.json`, free and public, no key needed.
+
+The following fields are extracted from each result:
+- Book title
+- Author
+- First publication year
+
+**Database Schema:**
+
+The SQLite database contains a `books` table with the following columns:
 
 | Column | Type | Description |
 |---|---|---|
@@ -53,44 +117,52 @@ Accuknox Assignment/
 | `year` | INTEGER | First publication year |
 
 **Approach:**
-1. Send a GET request to the Open Library API with a search query.
-2. Parse the JSON response and extract the list of book records (`docs` field).
-3. Connect to the local SQLite database and create the `books` table if it doesn't already exist.
-4. Loop through the first 10 fetched records, extracting title, author, and year for each.
-5. Handle missing fields gracefully — if `author_name` or `first_publish_year` isn't present in a record, default to `"Unknown Author"` or `0` instead of letting the script crash.
-6. Insert each record using a parameterized query (`?` placeholders) to prevent SQL injection.
-7. Commit the transaction and read the records back with a `SELECT` query.
-8. Display the retrieved records and close the database connection.
+1. Connect to the SQLite database.
+2. Create the `books` table if it doesn't already exist.
+3. Send a GET request to the Open Library API.
+4. Parse the JSON response and pull out the list of book records.
+5. Handle records where the author name or publication year is missing (defaults to `"Unknown Author"` / `0` instead of crashing).
+6. Insert the records into SQLite using parameterized queries.
+7. Commit the transaction.
+8. Retrieve and display the stored records.
+9. Close the database connection.
 
-**Key Concepts:** Python, REST API, `requests`, JSON, SQLite, parameterized SQL queries, defensive error handling.
+**Key Concepts:** Python, REST API, `requests`, JSON, SQLite, parameterized SQL queries, error handling.
 
 ---
 
-### 2. Data Processing and Visualization (`mock_scores_api.py` + `q2_scores.py`)
+### 2. Data Processing and Visualization
 
-**Objective:** Fetch student test-score data from an API, calculate the average score, and visualize it with a bar chart.
+**Objective:** Fetch student test-score data from an API, calculate the average score, and visualize the results using a bar chart.
 
-**Assumption:** No public API exists for student test-score data. To genuinely satisfy the "fetch from an API" requirement — rather than hardcoding the data — a local REST API was built using Flask. `mock_scores_api.py` serves a list of student names and scores as JSON at the `/scores` endpoint. `q2_scores.py` fetches this using a real `requests.get()` HTTP call, exactly as it would with any live API.
+**Assumption:** No public API exists for student test-score data, so hardcoding it directly wouldn't really satisfy "fetch from an API." Instead, I built a small local API with Flask (`mock_scores_api.py`) that serves the score data at a `/scores` endpoint, and fetched it with a genuine `requests.get()` call in `q2_scores.py` — the same way I'd fetch from any real API.
 
 **Approach:**
-1. Start the local Flask server, which exposes student score data at `http://127.0.0.1:5000/scores`.
-2. From the main script, send a GET request to this endpoint and parse the JSON response.
-3. Extract each student's score into a list and calculate the average (`sum / count`).
-4. Extract each student's name into a separate list, aligned by index with the scores.
-5. Plot a bar chart using `matplotlib`, with student names on the x-axis and scores on the y-axis.
-6. Draw a horizontal dashed line at the average score for quick visual reference, with a legend labeling it.
+1. Start the local Flask server, which exposes score data at `http://127.0.0.1:5000/scores`.
+2. Send a GET request to this endpoint from the main script and parse the JSON response.
+3. Extract each student's score into a list.
+4. Calculate the average score.
+5. Extract each student's name into a separate, aligned list.
+6. Generate a bar chart using `matplotlib`.
+7. Draw a horizontal line marking the average score, with a legend.
 
-**Key Concepts:** Python, Flask (building a local REST API), `requests`, JSON, `matplotlib`, basic statistics.
+**Key Concepts:** Python, Flask, `requests`, JSON, `matplotlib`, basic statistics.
 
 ---
 
-### 3. CSV Data Import to a Database (`q3_csv.py`)
+### 3. CSV Data Import to a Database
 
-**Objective:** Read user information from a CSV file and insert it into a local SQLite database.
+**Objective:** Read user information from a CSV file and insert the records into a local SQLite database.
 
-**Input Data:** `users_data.csv` contains two columns — `name` and `email`.
+**Input Data:**
 
-**Database Schema — `users` table:**
+The CSV file (`users_data.csv`) contains:
+- Name
+- Email
+
+**Database Schema:**
+
+The SQLite database contains a `users` table:
 
 | Column | Type | Description |
 |---|---|---|
@@ -99,11 +171,13 @@ Accuknox Assignment/
 | `email` | TEXT | User's email address |
 
 **Approach:**
-1. Connect to the local SQLite database and create the `users` table if it doesn't already exist.
-2. Open `users_data.csv` in read mode using a `with` block, so the file is automatically and safely closed after reading.
-3. Use `csv.DictReader` to read each row as a dictionary, with the CSV headers (`name`, `email`) as keys.
-4. Loop through each row and insert it into the `users` table using a parameterized query.
-5. Commit the transaction, then read back and display all stored records.
+1. Connect to the SQLite database.
+2. Create the `users` table if it doesn't already exist.
+3. Open the CSV file using a `with` block, so it closes automatically once reading is done.
+4. Read each row using `csv.DictReader`, keyed by the CSV headers (`name`, `email`).
+5. Insert each row into SQLite using a parameterized query.
+6. Commit the transaction.
+7. Retrieve and display the stored records.
 
 **Key Concepts:** Python, `csv` module, `DictReader`, SQLite, safe file handling with `with`.
 
@@ -113,81 +187,24 @@ Accuknox Assignment/
 
 See `PS1_Q4_Q5_Complex_Code.md` for links and honest context on prior technical background.
 
-## Problem Statement 2
+## Assignment 2
 
 Written responses to the conceptual questions (self-assessment, LLM chatbot architecture, and vector databases) are in the `Problem Statement 2/` folder, one file per question.
-
----
-
-## How to Run
-
-### 1. Clone the Repository
-```
-git clone <your-github-repository-url>
-cd "Accuknox Assignment"
-```
-
-### 2. Create a Virtual Environment
-```
-python -m venv venv
-```
-
-**Windows:**
-```
-venv\Scripts\activate
-```
-
-### 3. Install Dependencies
-```
-pip install -r requirements.txt
-```
-
-**`requirements.txt`:**
-```
-requests
-matplotlib
-flask
-```
-
-### 4. Run the Programs
-
-**API Data Retrieval and Storage:**
-```
-cd "Problem Statement 1"
-python q1_books.py
-```
-
-**Data Processing and Visualization** (requires two terminals):
-
-*Terminal 1 — start the mock API and leave it running:*
-```
-python mock_scores_api.py
-```
-
-*Terminal 2 — fetch the data and generate the chart:*
-```
-python q2_scores.py
-```
-
-**CSV Data Import to a Database:**
-```
-python q3_csv.py
-```
 
 ---
 
 ## Assumptions
 
 1. No public REST API exists for student test-score data, so a local Flask server was built to genuinely satisfy the "fetch from an API" requirement (see Question 2).
-2. Some book records from the API do not include an author name or publication year; these fields default to `"Unknown Author"` and `0` respectively rather than causing the script to fail.
-3. `books.db` and `users.db` are generated automatically when the respective scripts are run and are not included in this repository.
+2. Some book records from the API don't include an author name or publication year; these default to `"Unknown Author"` and `0` rather than crashing the script.
+3. `books.db` and `users.db` are generated automatically when the respective scripts run and aren't included in this repo.
 
 ---
 
 ## Error Handling
 
 The implementations account for common situations such as:
-- Missing fields in the API response (e.g., missing author or publication year)
+- Missing fields in the API response (missing author or publication year)
 - Empty or malformed CSV rows
 - Database connection and query errors
 
@@ -209,9 +226,9 @@ All database inserts use parameterized queries (`?` placeholders) to prevent SQL
 
 ## Conclusion
 
-This repository reflects my current, hands-on understanding of Python, REST APIs, SQLite, and data visualization — most of which was learned and applied directly while completing this assessment. Problem Statement 2 covers my research and reasoning on LLM-based chatbot architecture and vector databases.
+This repo reflects where I'm actually at right now with Python, REST APIs, SQLite, and data visualization — most of it learned and applied directly while working through this assessment. Problem Statement 2 has my reasoning on LLM-based chatbot architecture and vector databases.
 
-Thank you for reviewing my submission.
+Thanks for reviewing my submission.
 
 **Shourya Sharma**
 AI/ML Trainee Candidate
