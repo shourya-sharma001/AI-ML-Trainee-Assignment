@@ -19,6 +19,7 @@ def fetch_books(query="python programming"):
         return []
 
 
+
 def create_table(cursor):
     # UNIQUE constraint so running this script twice doesn't just double up the rows
     cursor.execute('''CREATE TABLE IF NOT EXISTS books (
