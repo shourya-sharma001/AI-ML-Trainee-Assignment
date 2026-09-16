@@ -42,6 +42,17 @@ def save_books(cursor, books_list, limit=10):
         # leaving this as None when missing instead of 0, since 0 looks like a real year
         year = book.get("first_publish_year")
 
+        if year is None:
+            # SQLite treats NULL as never equal to itself, so the UNIQUE(title, author, year)
+            # constraint doesn't catch duplicates when year is missing. Check manually here
+            # so re-running the script doesn't insert the same no-year book twice.
+            cursor.execute(
+                "SELECT 1 FROM books WHERE title = ? AND author = ? AND year IS NULL",
+                (title, author)
+            )
+            if cursor.fetchone():
+                continue  # already exists, skip
+
         cursor.execute(
             "INSERT OR IGNORE INTO books (title, author, year) VALUES (?, ?, ?)",
             (title, author, year)
